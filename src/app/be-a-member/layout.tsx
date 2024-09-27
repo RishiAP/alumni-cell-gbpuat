@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Alumni Cell Pantnagar",
-  description: "Connecting Alumni and Students",
+  title: "Be a member | Alumni Cell",
+  description: "Be a member of the alumni cell pantnagar for better connection.",
 };
 
 export default function RootLayout({
@@ -12,10 +11,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
+    <>
         {children}
-      </body>
-    </html>
+    </>
   );
 }
