@@ -8,7 +8,7 @@ import { Department } from "@/types/department";
 import { State } from "@/types/state";
 import { User } from "@/types/user";
 import axios from "axios";
-import { Button, Label, Select, TextInput } from "flowbite-react";
+import { Button, Label, Select, Spinner, TextInput } from "flowbite-react";
 import { FormEvent, useEffect, useState } from "react";
 
 export default function Home() {
@@ -22,6 +22,7 @@ export default function Home() {
   const[states,setStates] = useState<State[]>([]);
   const [users,setUsers]=useState<User[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [loading,setLoading]=useState(false);
   function getCity(city:string):string|number{
     const cityObject=cities.find((c)=>c.name.toLowerCase()===city.toLowerCase());
     if(cityObject===undefined){
@@ -56,10 +57,13 @@ function getCityFromCode(city:number|string):string{
 
   function handleSearch(e:FormEvent){
     e.preventDefault();
+    setLoading(true);
     axios.get(`/api/search?country=${country}&state=${state}&city=${city}&batch=${batch}&branch=${branch}`).then((res) => {
       setUsers(res.data);
     }).catch((err) => {
       console.log(err);
+    }).finally(()=>{
+      setLoading(false);
     });
   }
   const current_year = new Date().getFullYear();
@@ -139,12 +143,12 @@ function getCityFromCode(city:number|string):string{
         </Select>
       </div>
 
-      <Button type="submit" style={{height:"40px",marginTop:"auto",marginBottom:"2px"}}>Search</Button>
+      <Button type="submit" style={{height:"40px",marginTop:"auto",marginBottom:"2px"}}>{loading?<>Searching...<Spinner aria-label="Spinner button example" size="sm" /></>:"Search"}</Button>
       <Button type="reset" style={{height:"40px",marginTop:"auto",marginBottom:"2px"}}>Reset</Button>
     </form>
-      <div className="flex flex-col">
+      <div className="flex flex-col items-center">
       {
-        users.map((user) => <ProfileCard key={user.id} user={user} />)
+        loading?<><Spinner aria-label="Spinner button example" className="mt-5" size="lg" /></>:users.map((user) => <ProfileCard key={user.id} user={user} />)
       }
       </div>
     </>

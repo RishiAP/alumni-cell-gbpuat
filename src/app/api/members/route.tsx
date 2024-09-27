@@ -31,12 +31,14 @@ export async function POST(req:NextRequest){
             catch(err){
                 console.log(err);
                 await cloudinary.uploader.destroy(uploadResponse.public_id);
-                throw Error("Something went wrong");
+                throw new Error("Something went wrong",{cause:err});
             }
         return NextResponse.json({message:"Success"}, {status: 200});
     }
     catch(err){
         console.log(err);
-        return NextResponse.json({error:err}, {status: 500});
+        if(err instanceof Error){
+            return NextResponse.json({error:err,cause:err.cause}, {status: 500});
+        }
     }
 }

@@ -47,16 +47,6 @@ const ProfileCard = (props:{user:User}) => {
 
             {/* Social Icons */}
             <div className="flex space-x-4 mt-4">
-                {
-                    socials.instagram!="" && <a
-                    href={`https://instagram.com/${socials.instagram}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FaInstagram className="text-pink-500 text-2xl" />
-                  </a>
-                }
-              
               {
 
                 socials.linkedin!="" && <a
@@ -67,6 +57,16 @@ const ProfileCard = (props:{user:User}) => {
                     <FaLinkedin className="text-blue-600 text-2xl" />
                 </a>
               }
+              {
+                  socials.instagram!="" && <a
+                  href={`https://instagram.com/${socials.instagram}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaInstagram className="text-pink-500 text-2xl" />
+                </a>
+              }
+              
             </div>
           </div>
         </div>

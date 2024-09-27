@@ -6,10 +6,12 @@ import { Department } from "@/types/department";
 import FormData from "@/types/formData";
 import { State } from "@/types/state";
 import axios from "axios";
-import { Button, FloatingLabel, Select, TextInput } from "flowbite-react";
+import { Button, FloatingLabel, Select, Spinner, TextInput } from "flowbite-react";
 import React, { useEffect, useState } from "react";
 import {FaInstagram, FaLinkedin} from "react-icons/fa";
 import { ImageCropper } from "./ImageCropper";
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export function MemberForm() {
     const current_year = new Date().getFullYear();
@@ -23,6 +25,7 @@ export function MemberForm() {
     const [batchValid, setBatchValid] = useState<boolean|null>(null);
     const [picValid, setPicValid] = useState<boolean|null>(null);
     const [cities, setCities] = useState<City[]>([]);
+    const [loading,setLoading]=useState(false);
     useEffect(() => {
         axios.get("/api/departments").then((res) => {
             setDepartments(res.data);
@@ -74,11 +77,32 @@ export function MemberForm() {
         else{
             setStateValid(true);
         }
-        axios.post("/api/members",formData).then((res) => {
-            console.log(res);
+        setLoading(true);
+        axios.post("/api/members",formData).then(() => {
+            toast.success('Submitted successfully',{theme:document.querySelector('html')!.getAttribute('data-theme')=='light'?'light':'dark'});
         }).catch(error=>{
             console.log(error);
-        })
+            let message="Something went wrong!";
+            if(error.response.data.cause!=null){
+                if(error.response.data.cause.code==="ER_DUP_ENTRY"){
+                    if(error.response.data.cause.sqlMessage.includes("users.PRIMARY")){
+                        message="ID No. already exists!";
+                    }
+                    else if(error.response.data.cause.sqlMessage.includes("users.email")){
+                        message="Email already exists!";
+                    }
+                    else if(error.response.data.cause.sqlMessage.includes("users.mobile_no")){
+                        message="Mobile No. already exists!";
+                    }
+                    else if(error.response.data.cause.sqlMessage.includes("users.whatsapp_no")){
+                        message="WhatsApp No. already exists!";
+                    }
+                }
+            }
+            toast.error(message,{theme:document.querySelector('html')!.getAttribute('data-theme')=='light'?'light':'dark'});
+        }).finally(()=>{
+            setLoading(false);
+        });
     }
     useEffect(() => {
         console.log(formData);
@@ -185,7 +209,8 @@ export function MemberForm() {
       <TextInput id="username3" placeholder="Username/Link" icon={FaInstagram} value={formData.instagram} onInput={(e)=>{setFormData({...formData,instagram:e.currentTarget.value})}} />
         </div>
       
-      <Button type="submit">Submit</Button>
+      <Button type="submit">{loading?<>Submitting... <Spinner aria-label="Spinner button example" size="sm" /></>:"Submit"}</Button>
+      <ToastContainer draggable={true} draggablePercent={30} position={"top-center"} />
     </form>
   );
 }
