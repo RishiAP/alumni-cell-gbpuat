@@ -10,6 +10,8 @@ import { User } from "@/types/user";
 import axios from "axios";
 import { Alert, Button, Label, Select, Spinner, TextInput } from "flowbite-react";
 import { FormEvent, useEffect, useState } from "react";
+import { AiOutlineLoading } from "react-icons/ai";
+import { BsPlusCircle } from "react-icons/bs";
 import { HiInformationCircle } from "react-icons/hi";
 
 export default function Home() {
@@ -21,10 +23,12 @@ export default function Home() {
   const[departments,setDepartments] = useState<Department[]>([]);
   const[countries,setCountries] = useState<Country[]>([]);
   const[states,setStates] = useState<State[]>([]);
-  const [users,setUsers]=useState<User[]>([]);
+  const [users,setUsers]=useState<User[]|null>(null);
   const [cities, setCities] = useState<City[]>([]);
   const [loading,setLoading]=useState(false);
   const [isRecent,setIsRecent]=useState(true);
+  const [loadMoreButtonSpinner,setLoadMoreButtonSpinner]=useState(false);
+  const [shouldFetchMore,setShouldFetchMore]=useState(false);
   function getCity(city:string):string|number{
     const cityObject=cities.find((c)=>c.name.toLowerCase()===city.toLowerCase());
     if(cityObject===undefined){
@@ -42,6 +46,20 @@ function getCityFromCode(city:number|string):string{
     }
     return city;
 }
+function handleMoreLoading(){
+  if(users==null || !shouldFetchMore)
+    return;
+  setLoadMoreButtonSpinner(true);
+  axios.get(`/api/search?country=${country}&state=${state}&city=${city}&batch=${batch}&branch=${branch}&offset=${users.length}`).then((res) => {
+    if(res.data.length<10)
+      setShouldFetchMore(false);
+    setUsers([...users,...res.data]);
+  }).catch((err) => {
+    console.log(err);
+  }).finally(()=>{
+    setLoadMoreButtonSpinner(false);
+  });
+}
   useEffect(() => {
     axios.get("/api/departments").then((res) => {
         setDepartments(res.data);
@@ -50,7 +68,12 @@ function getCityFromCode(city:number|string):string{
         setCountries(res.data);
     });
     axios.get("/api/members").then((res) => {
-      console.log(res.data);
+      if(res.data.length<10){
+        setShouldFetchMore(false);
+      }
+      else{
+        setShouldFetchMore(true);
+      }
       setUsers(res.data);
     }).catch((err) => {
       console.log(err);
@@ -67,6 +90,12 @@ function getCityFromCode(city:number|string):string{
       setIsRecent(false);
     }
     axios.get(`/api/search?country=${country}&state=${state}&city=${city}&batch=${batch}&branch=${branch}`).then((res) => {
+      if(res.data.length<10){
+        setShouldFetchMore(false);
+      }
+      else{
+        setShouldFetchMore(true);
+      }
       setUsers(res.data);
     }).catch((err) => {
       console.log(err);
@@ -157,18 +186,25 @@ function getCityFromCode(city:number|string):string{
       <Button type="submit" style={{height:"40px",marginTop:"auto",marginBottom:"2px"}}>{loading?<>Searching...<Spinner aria-label="Spinner button example" size="sm" /></>:"Search"}</Button>
       <Button type="reset" style={{height:"40px",marginTop:"auto",marginBottom:"2px"}}>Reset</Button>
     </form>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center mb-6">
       {
-        loading?<><Spinner aria-label="Spinner button example" className="mt-5" size="lg" /></>:
+        loading || users==null?<><Spinner aria-label="Spinner button example" className="mt-5" size="lg" /></>:
         <>
         {
           isRecent && <h1 className="text-2xl mt-3">Latest Members</h1>
         }
         {
-          users.length==0?<Alert color="info" icon={HiInformationCircle} className="text-base mt-4">
+          users!=null && users.length==0?<Alert color="info" icon={HiInformationCircle} className="text-base mt-4">
           <span className="font-medium">Oops!</span> No matches found. Try changing the search criteria.
         </Alert>
-        :users.map((user) => <ProfileCard key={user.id} user={user} />)
+        :users!=null && users.map((user) => <ProfileCard key={user.id} user={user} />)
+        }
+        {
+          users!=null && users.length>9 && <Button isProcessing={loadMoreButtonSpinner} processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />} outline gradientDuoTone="purpleToPink" size={'lg'} onClick={handleMoreLoading}>
+            {
+              loadMoreButtonSpinner?"Loading...":<span className="flex items-center gap-2"><span>Load More</span> <BsPlusCircle size={24} /> </span>
+            }
+            </Button>
         }
         </>
       }

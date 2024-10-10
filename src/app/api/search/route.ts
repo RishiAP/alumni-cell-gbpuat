@@ -6,6 +6,7 @@ export async function GET(req:NextRequest){
         const params=new URL(req.url).searchParams;
         const country=parseInt(params.get("country")||"0");
         const state=parseInt(params.get("state")||"0");
+        const offset=parseInt(params.get("offset")||"0");
         let city:string|number=params.get("city") || "0";
         try{
             city=parseInt(city);
@@ -43,11 +44,12 @@ export async function GET(req:NextRequest){
             query+=" AND users.dept_id=?";
             queryParam.push(branch);
         }
-        query+=" ORDER BY users.created_at DESC LIMIT 10";
+        query+=` ORDER BY users.created_at DESC LIMIT 10 OFFSET ${offset}`;
         const [data]=await connect().execute(query,queryParam);
         return NextResponse.json(data,{status:200});
     }
     catch(err){
+        console.log(err);
         return NextResponse.json({error:err},{status:500});
     }
 }
