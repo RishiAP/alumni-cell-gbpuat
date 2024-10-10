@@ -200,11 +200,16 @@ function handleMoreLoading(){
         :users!=null && users.map((user) => <ProfileCard key={user.id} user={user} />)
         }
         {
-          users!=null && users.length>9 && <Button isProcessing={loadMoreButtonSpinner} processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />} outline gradientDuoTone="purpleToPink" size={'lg'} onClick={handleMoreLoading}>
+          users!=null && users.length>9 && shouldFetchMore && <Button isProcessing={loadMoreButtonSpinner} processingSpinner={<AiOutlineLoading className="h-6 w-6 animate-spin" />} outline gradientDuoTone="purpleToPink" size={'lg'} onClick={handleMoreLoading}>
             {
               loadMoreButtonSpinner?"Loading...":<span className="flex items-center gap-2"><span>Load More</span> <BsPlusCircle size={24} /> </span>
             }
             </Button>
+        }
+        {
+          users!=null && !shouldFetchMore && <Alert color="info" icon={HiInformationCircle} className="text-base mt-4">
+          <span className="font-medium">End of Results.</span> No more results to show.
+        </Alert>
         }
         </>
       }
