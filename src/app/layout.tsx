@@ -14,8 +14,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "https://res.cloudinary.com/dnxfq38fr/image/upload/v1728536795/q62iuicnjzxlvkysldxa.jpg", // Path to the OG image
-        width: 4000,
-        height: 2250,
+        width: 800,
+        height: 600,
         alt: "Alumni Cell Pantnagar OG Image",
       },
     ],
