@@ -78,7 +78,7 @@ export function MemberForm() {
             setStateValid(true);
         }
         setLoading(true);
-        axios.post("/api/members",formData).then(() => {
+        axios.post("/api/members",{...formData,linkedin:formData.linkedin.split("/in/").pop(),instagram:formData.instagram.split("instagram.com/").pop()}).then(() => {
             toast.success('Submitted successfully',{theme:document.querySelector('html')!.getAttribute('data-theme')=='light'?'light':'dark'});
         }).catch(error=>{
             console.log(error);

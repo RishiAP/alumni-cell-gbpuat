@@ -12,7 +12,7 @@ export function AppBar() {
         <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">Alumni Cell</span>
       </Navbar.Brand>
       <div className="flex md:order-2">
-        <Button> <Link href="/be-a-member">Be a member</Link> </Button>
+      <Link href="/be-a-member"><Button>Be a member</Button></Link>
         <Navbar.Toggle />
       </div>
       <Navbar.Collapse>

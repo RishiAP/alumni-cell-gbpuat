@@ -8,7 +8,7 @@ import { Department } from "@/types/department";
 import { State } from "@/types/state";
 import { User } from "@/types/user";
 import axios from "axios";
-import { Button, Label, Select, Spinner, TextInput } from "flowbite-react";
+import { Alert, Button, Label, Select, Spinner, TextInput } from "flowbite-react";
 import { FormEvent, useEffect, useState } from "react";
 
 export default function Home() {
@@ -20,7 +20,8 @@ export default function Home() {
   const[departments,setDepartments] = useState<Department[]>([]);
   const[countries,setCountries] = useState<Country[]>([]);
   const[states,setStates] = useState<State[]>([]);
-  const [users,setUsers]=useState<User[]>([]);
+  const [recent,setRecent]=useState<boolean>(true);
+  const [users,setUsers]=useState<null|User[]>(null);
   const [cities, setCities] = useState<City[]>([]);
   const [loading,setLoading]=useState(false);
   function getCity(city:string):string|number{
@@ -58,6 +59,10 @@ function getCityFromCode(city:number|string):string{
   function handleSearch(e:FormEvent){
     e.preventDefault();
     setLoading(true);
+    if(country==0 && batch==0 && branch==0)
+      setRecent(true);
+    else
+    setRecent(false);
     axios.get(`/api/search?country=${country}&state=${state}&city=${city}&batch=${batch}&branch=${branch}`).then((res) => {
       setUsers(res.data);
     }).catch((err) => {
@@ -68,6 +73,8 @@ function getCityFromCode(city:number|string):string{
   }
   const current_year = new Date().getFullYear();
   useEffect(()=>{
+    setStates([]);
+    setState(0);
     axios.get(`/api/states?country_id=${country}`).then((res) => {
       setStates(res.data);
     }).catch((err) => {
@@ -75,6 +82,9 @@ function getCityFromCode(city:number|string):string{
     });
   },[country])
   useEffect(()=>{
+    setCities([]);
+    if(state==0)
+      return;
     axios.get(`/api/cities?state_id=${state}`).then((res) => {
     setCities(res.data);
     }).catch((err) => {
@@ -100,8 +110,8 @@ function getCityFromCode(city:number|string):string{
 
       <div>
         <Label htmlFor="state">State</Label>
-        <Select id="state" onInput={(e) => setState(parseInt(e.currentTarget.value))}>
-          <option value="">Any</option>
+        <Select id="state" disabled={states.length==0} onInput={(e) => setState(parseInt(e.currentTarget.value))}>
+          <option value="0">Any</option>
           {
             states.sort((a:State,b:State)=> a.name.localeCompare(b.name)).map((state) => <option key={state.id} value={state.id}>{state.name}</option>)
           }
@@ -113,7 +123,7 @@ function getCityFromCode(city:number|string):string{
       <div className="mb-0 block">
           <Label htmlFor="city" value="City" />
         </div>
-        <TextInput list="cities" id="city" type="text" placeholder="City/Locality" value={city!=0?getCityFromCode(city):""} onInput={(e) => setCity(getCity(e.currentTarget.value))}  />
+        <TextInput list="cities" id="city" type="text" placeholder="City/Locality" value={city!=0?getCityFromCode(city):""} onInput={(e) => setCity(getCity(e.currentTarget.value))} disabled={cities.length==0} />
           <datalist id="cities">
             {
               cities.sort((a:City,b:City)=> a.name.localeCompare(b.name)).map((city) => <option key={city.id} value={city.name}></option>)
@@ -146,9 +156,14 @@ function getCityFromCode(city:number|string):string{
       <Button type="submit" style={{height:"40px",marginTop:"auto",marginBottom:"2px"}}>{loading?<>Searching...<Spinner aria-label="Spinner button example" size="sm" /></>:"Search"}</Button>
       <Button type="reset" style={{height:"40px",marginTop:"auto",marginBottom:"2px"}}>Reset</Button>
     </form>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center mt-4">
+        {
+          recent?<h1 className="text-2xl">Recent users</h1>:null
+        }
       {
-        loading?<><Spinner aria-label="Spinner button example" className="mt-5" size="lg" /></>:users.map((user) => <ProfileCard key={user.id} user={user} />)
+        loading?<><Spinner aria-label="Spinner button example" className="mt-5" size="lg" /></>:users!=null? (users.length>0?users.map((user) => <ProfileCard key={user.id} user={user} />):<Alert color="failure">
+        <span className="font-medium">Oops!</span> No users found. Please try again.
+      </Alert>):null
       }
       </div>
     </>
