@@ -8,10 +8,17 @@ import { useEffect, useState } from "react";
 export function AppBar() {
   const [loading,setLoading]=useState(false);
   const [activePath,setActivePath]=useState('');
-  function handleClickLoader(e:any){
-    if(e.target.tagName==="A" && window.location.pathname!==e.target.pathname || e.target.tagName==="BUTTON" && e.target.children[0].tagName==="A" && window.location.pathname!==e.target.children[0].pathname)
-    setLoading(true);
+  function handleClickLoader(e: React.MouseEvent<HTMLElement>) {
+    const target = e.target as HTMLElement; // Cast to HTMLElement to access tagName
+  
+    if (
+      (target.tagName === "A" && window.location.pathname !== (target as HTMLAnchorElement).pathname) ||
+      (target.tagName === "BUTTON" && target.children[0].tagName === "A" && window.location.pathname !== (target.children[0] as HTMLAnchorElement).pathname)
+    ) {
+      setLoading(true);
+    }
   }
+  
   useEffect(() => {
     setActivePath(window.location.pathname);
   },[]);
