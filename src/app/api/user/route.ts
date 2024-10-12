@@ -1,30 +1,38 @@
-import cloudinary from "@/config/cludinaryConfig";
-import connect from "@/config/dbConfig";
-import { getFileSizeFromBase64, getUserFromHeader } from "@/helpers/common_func";
-import FormData from "@/types/formData";
-import { serialize } from "cookie";
-import { NextRequest, NextResponse } from "next/server";
+import { initAdmin } from '@/config/firebase/firebaseAdmin';
+import { NextRequest, NextResponse } from 'next/server';
 import jwt from "jsonwebtoken";
-
-export async function GET(){
+import connect from '@/config/dbConfig';
+import { serialize } from 'cookie';
+import { getFileSizeFromBase64, getUserFromHeader } from '@/helpers/common_func';
+import FormData from '@/types/formData';
+import cloudinary from '@/config/cludinaryConfig';
+connect();
+export async function GET(req: NextRequest) {
     try{
-        const [data]=await connect().query('SELECT users.id,users.name,users.batch,users.mobile_no,users.whatsapp_no,users.email,users.job_title,users.current_org,users.socials,departments.dept_name,COALESCE(cities.name,users.city_name) AS city,states.name AS state,countries.name AS country,countries.emoji,users.profile_pic FROM users INNER JOIN departments ON users.dept_id=departments.dept_id LEFT JOIN cities ON users.city_id=cities.id LEFT JOIN states ON users.state_id=states.id LEFT JOIN countries ON users.country_id=countries.id ORDER BY users.created_at DESC LIMIT 10');
-        return NextResponse.json(data, {status: 200});
+        const user=await getUserFromHeader(req);
+        if(user==null){
+            return NextResponse.json({error:"Unauthorized"},{status:401});
+        }
+        const [currentUser]:any[]=await connect().query(`SELECT * FROM users WHERE email=?`,[user.email]);
+        if(currentUser.length==0){
+            return NextResponse.json({error:"User not found"},{status:404});
+        }
+        return NextResponse.json(currentUser[0], { status: 200 });
     }
-    catch(err){
-        console.log(err);
-        return NextResponse.json({error:"Something went wrong"}, {status: 500});
+    catch(error){
+        console.log(error);
+        return NextResponse.json({error},{status:500});
     }
 }
 
-export async function POST(req:NextRequest){
+export async function PUT(req:NextRequest){
     try{
         const user=await getUserFromHeader(req);
         if(user==null)
         return NextResponse.json({message:"Unauthorized"},{status:401});
         const {id,name,dept_id,batch,mobile,whatsapp,currentLocation,jobTitle,organization,instagram,linkedin,profile_pic}:FormData=await req.json();
         let uploadResponse=null;
-        if(profile_pic.includes("data:image")){
+        if(profile_pic.startsWith("data:image")){
             if(Math.ceil(getFileSizeFromBase64(profile_pic)/1024)>250){
                 throw Error("Image size should be less than 250KB");
             }
@@ -35,7 +43,7 @@ export async function POST(req:NextRequest){
             });
         }
           try{
-              await connect().query('INSERT INTO users (`id`,`name`,`batch`,`dept_id`,`email`,`mobile_no`,`profile_pic`,`whatsapp_no`,`city_id`,`state_id`,`country_id`,`city_name`,`job_title`,`current_org`,`socials`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [id,name,batch,dept_id,user.email,mobile,uploadResponse==null?user.profile_pic:uploadResponse.secure_url,whatsapp==""?null:whatsapp,typeof currentLocation.locality=="number"?currentLocation.locality:null,currentLocation.state_id,currentLocation.country_id,typeof currentLocation.locality=="string"?currentLocation.locality:null,jobTitle==""?null:jobTitle,organization==""?null:organization,JSON.stringify({instagram,linkedin})]);
+              await connect().query('UPDATE users SET `id`=?,`name`=?,`batch`=?,`dept_id`=?,`mobile_no`=?,`profile_pic`=?,`whatsapp_no`=?,`city_id`=?,`state_id`=?,`country_id`=?,`city_name`=?,`job_title`=?,`current_org`=?,`socials`=? WHERE `email`=?', [id,name,batch,dept_id,mobile,uploadResponse==null?user.profile_pic:uploadResponse.secure_url,whatsapp==""?null:whatsapp,typeof currentLocation.locality=="number"?currentLocation.locality:null,currentLocation.state_id,currentLocation.country_id,typeof currentLocation.locality=="string"?currentLocation.locality:null,jobTitle==""?null:jobTitle,organization==""?null:organization,JSON.stringify({instagram,linkedin}),user.email]);
           }
             catch(err){
                 console.log(err);

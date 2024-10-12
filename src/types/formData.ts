@@ -11,5 +11,5 @@ export default interface FormData{
     batch: number;
     dept_id: number;
     id: number;
-    profilePic: string;
+    profile_pic: string;
 };

@@ -8,10 +8,10 @@ export default function HomePageCarousel() {
   return (
     <div className="h-56 sm:h-64 xl:h-80 2xl:h-96 max-w-7xl m-auto">
       <Carousel slideInterval={5000}>
-        <Image width={1280} height={784} style={{width:"100%"}} src="https://res.cloudinary.com/dnxfq38fr/image/upload/v1728547825/alumni-cell-gbpuat/fafqb2evqbubdqlc5zfj.jpg" alt="..." />
-        <Image width={1280} height={784} style={{width:"100%"}} src="https://res.cloudinary.com/dnxfq38fr/image/upload/v1728547825/alumni-cell-gbpuat/zit4pe6ta0auuyxuirh4.jpg" alt="..." />
-        <Image width={1280} height={784} style={{width:"100%"}} src="https://res.cloudinary.com/dnxfq38fr/image/upload/v1728548524/alumni-cell-gbpuat/clgthb3o5sgijctqjz8e.jpg" alt="..." />
-        <Image width={1280} height={784} style={{width:"100%"}} src="https://res.cloudinary.com/dnxfq38fr/image/upload/v1728547825/alumni-cell-gbpuat/tmbpktcsz2gl8kkxzgrb.jpg" alt="..." />
+        <Image width={1280} height={784} style={{width:"100%"}} src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1728659797/alumni-cell-gbpuat/cbixpy64i9aepmjyjanc.jpg`} alt="..." />
+        <Image width={1280} height={784} style={{width:"100%"}} src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1728659795/alumni-cell-gbpuat/bd1fgdp5p9yhhzkef9nz.jpg`} alt="..." />
+        <Image width={1280} height={784} style={{width:"100%"}} src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1728659795/alumni-cell-gbpuat/g4u2jwfdwebipxots3tt.jpg`} alt="..." />
+        <Image width={1280} height={784} style={{width:"100%"}} src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1728659795/alumni-cell-gbpuat/gsmff33tvu4eosi8hws2.jpg`} alt="..." />
       </Carousel>
     </div>
   );

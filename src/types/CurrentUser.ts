@@ -1,0 +1,19 @@
+export interface CurrentUser{
+    id:number;
+    name:string;
+    batch:number;
+    mobile_no:string;
+    whatsapp_no:string|null;
+    email:string;
+    job_title:string|null;
+    current_org:string|null;
+    socials:string;
+    dept_id:number;
+    city_id:number|null;
+    city_name:string|null;
+    profile_pic:string;
+    state_id:number;
+    country_id:number;
+    emoji:string;
+    profile:boolean;
+}

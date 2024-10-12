@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import ReduxProvider from "@/components/ReduxProvider";
 
 export const metadata: Metadata = {
   title: "Alumni Cell Pantnagar",
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
     siteName: "Alumni Cell Pantnagar",
     images: [
       {
-        url: "https://res.cloudinary.com/dnxfq38fr/image/upload/v1728547825/alumni-cell-gbpuat/fafqb2evqbubdqlc5zfj.jpg", // Path to the OG image
+        url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1728659797/alumni-cell-gbpuat/cbixpy64i9aepmjyjanc.jpg`, // Path to the OG image
         width: 800,
         height: 600,
         alt: "Alumni Cell Pantnagar OG Image",
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
     creator: "@alumnicell", // Content creator's Twitter handle
     title: "Alumni Cell Pantnagar",
     description: "Connecting Alumni and Students",
-    images: ["https://res.cloudinary.com/dnxfq38fr/image/upload/v1728536795/q62iuicnjzxlvkysldxa.jpg"], // Path to Twitter card image
+    images: [`https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1728659797/alumni-cell-gbpuat/cbixpy64i9aepmjyjanc.jpg`], // Path to Twitter card image
   },
 };
 
@@ -36,10 +37,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
+    <ReduxProvider>
+    <html lang="en" className="">
+      <body className="bg-white text-gray-600 antialiased dark:bg-gray-900 dark:text-gray-400">
         {children}
       </body>
     </html>
+    </ReduxProvider>
   );
 }

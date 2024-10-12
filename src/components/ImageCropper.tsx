@@ -5,7 +5,7 @@ import React, { ReactEventHandler, useEffect, useState } from 'react'
 import ReactCrop, { centerCrop, Crop, makeAspectCrop, PixelCrop } from 'react-image-crop'
 import 'react-image-crop/dist/ReactCrop.css'
 
-export const ImageCropper = (props:{setProfilePic:(arg:string)=>void,picValid:boolean|null,setPicValid:React.Dispatch<React.SetStateAction<boolean|null>>}) => {
+export const ImageCropper = (props:{setProfilePic:(arg:string)=>void,picValid:boolean|null,setPicValid:React.Dispatch<React.SetStateAction<boolean|null>>,defaultPic?:string}) => {
     const [src,setSrc]=useState<string|null>(null);
     const [croppedImageUrl, setCroppedImageUrl] = useState<string | null>(null);
     const [imageDataAmount, setImageDataAmount] = useState<number | null>(null);
@@ -30,6 +30,13 @@ export const ImageCropper = (props:{setProfilePic:(arg:string)=>void,picValid:bo
     useEffect(()=>{
         console.log(croppedImageUrl);
       },[croppedImageUrl]);
+      useEffect(()=>{
+        if(props.defaultPic!=null){
+            setCroppedImageUrl(props.defaultPic);
+            props.setProfilePic(props.defaultPic);
+            props.setPicValid(true);
+        }
+      },[props.defaultPic]);
     const [crop, setCrop] = useState<Crop>({
         unit: '%',
         width: 50,
@@ -107,7 +114,7 @@ export const ImageCropper = (props:{setProfilePic:(arg:string)=>void,picValid:bo
     <div className="flex justify-center gap-3">
 
     <label htmlFor="profileImage" className="flex flex-col items-center gap-3">
-            <NextImage src={`${croppedImageUrl==null?"/user.svg":croppedImageUrl}`} height={196} width={196} alt={"profilePic"} className={`rounded-full ${props.picValid==false?"border-8 border-flowbite-react-error":""}`}/>
+            <NextImage src={`${croppedImageUrl==null || croppedImageUrl==""?"/user.svg":croppedImageUrl}`} height={196} width={196} alt={"profile_pic"} className={`rounded-full ${props.picValid==false?"border-8 border-flowbite-react-error":""}`}/>
             <p className={`text-red-600 ${props.picValid==false?"":"hidden"}`}>Please choose an image</p>
             <Button type="button" onClick={() => {
                 (document.getElementById("profileImage") as HTMLInputElement).click();
@@ -123,7 +130,7 @@ export const ImageCropper = (props:{setProfilePic:(arg:string)=>void,picValid:bo
         props.setProfilePic("");
         (document.getElementById("profileImage") as HTMLInputElement).value="";
         }}>
-        <Modal.Header>Crop Image</Modal.Header>
+        <Modal.Header className='flex gap-3 flex-row items-center'><span>Crop Image</span> <span className='mt-3 text-sm'>{`(Maximum - 250 KB)`}</span></Modal.Header>
         <Modal.Body className='flex flex-col items-center p-3'>
         {src!=null && (
         <ReactCrop
@@ -142,7 +149,6 @@ export const ImageCropper = (props:{setProfilePic:(arg:string)=>void,picValid:bo
             <img src={src} id="mainCroppingImage" onLoad={onImageLoaded} alt="" className='max-w-full' style={{maxHeight:"calc(100vh - 250px)"}} />
         </ReactCrop>
       )}
-      <p className='mt-3'>Image should be maximum of 250 KB</p>
         </Modal.Body>
         <Modal.Footer className='justify-between'>
             <div>
@@ -151,7 +157,7 @@ export const ImageCropper = (props:{setProfilePic:(arg:string)=>void,picValid:bo
                 imageDataAmount!=null && <p>Image size: {imageDataAmount} KB</p>
             }
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-3">
 
           <Button color="gray" onClick={() => {
               setOpenModal(false);

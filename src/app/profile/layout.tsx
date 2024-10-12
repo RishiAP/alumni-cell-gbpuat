@@ -1,11 +1,10 @@
-import type { Metadata } from "next";
 import ReduxProvider from "@/components/ReduxProvider";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Be a member | Alumni Cell",
-  description: "Be a member of the alumni cell pantnagar for better connection.",
-};
-
+    title:"Profile Page | Alumni Cell",
+    description:"Profile page for your account",
+}
 
 export default function RootLayout({
   children,
@@ -18,4 +17,3 @@ export default function RootLayout({
     </ReduxProvider>
   );
 }
-

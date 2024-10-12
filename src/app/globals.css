@@ -5,3 +5,14 @@
 .border-flowbite-react-error{
     border-color: rgb(224 36 36/1);
 }
+
+html .disableable-email:disabled{
+    background-color: #e1e1e1;
+}
+html.dark .disableable-email:disabled{
+    background-color: #2d2d2d;
+}
+.disableable-email + label{
+    z-index: 1;
+    bottom: 24px;
+}

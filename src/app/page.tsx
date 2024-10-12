@@ -2,6 +2,7 @@
 import HomePageCarousel from "@/components/HomePageCarousel";
 import { AppBar } from "@/components/Navbar";
 import ProfileCard from "@/components/ProfileCard";
+import ProfileSkeleton from "@/components/ProfileSkeleton";
 import { City } from "@/types/city";
 import { Country } from "@/types/country";
 import { Department } from "@/types/department";
@@ -188,7 +189,13 @@ function handleMoreLoading(){
     </form>
       <div className="flex flex-col items-center mb-6">
       {
-        loading || users==null?<><Spinner aria-label="Spinner button example" className="mt-5" size="lg" /></>:
+        loading || users==null?
+        <>
+        {
+          Array.from({ length: 10 }, (_, i) => <ProfileSkeleton key={i} />)
+        }
+        </>
+        :
         <>
         {
           isRecent && <h1 className="text-2xl mt-3">Latest Members</h1>

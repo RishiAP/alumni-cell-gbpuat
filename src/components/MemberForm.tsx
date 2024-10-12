@@ -12,10 +12,20 @@ import {FaInstagram, FaLinkedin} from "react-icons/fa";
 import { ImageCropper } from "./ImageCropper";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { useDispatch, useSelector } from "react-redux";
+import { setSignInModal } from "@/store/signinModalSlice";
+import { CurrentUser } from "@/types/CurrentUser";
+import { get } from "http";
+import { setUser } from "@/store/currentUserSlice";
+import { useRouter } from "next/navigation";
 
-export function MemberForm() {
+export function MemberForm(props:{data:boolean}) {
     const current_year = new Date().getFullYear();
-    const [formData, setFormData] = useState<FormData>({name:"",email:"",mobile:"",whatsapp:"",currentLocation:{locality:"",state_id:0,country_id:0},jobTitle:"",organization:"",linkedin:"",instagram:"",batch:0,dept_id:0,id:0,profilePic:""});
+    const dispatch=useDispatch();
+    const router=useRouter();
+    const currentUser=useSelector((state:any)=>state.currentUser.value);
+    const initialFormData:FormData = {name:"",email:"",mobile:"",whatsapp:"",currentLocation:{locality:"",state_id:0,country_id:0},jobTitle:"",organization:"",linkedin:"",instagram:"",batch:0,dept_id:0,id:0,profile_pic:""};
+    const [formData, setFormData] = useState<FormData>(initialFormData);
     const[departments,setDepartments] = useState<Department[]>([]);
     const[countries,setCountries] = useState<Country[]>([]);
     const[states,setStates] = useState<State[]>([]);
@@ -35,14 +45,14 @@ export function MemberForm() {
         });
         }, []);
         function setProfilePic(pic:string){
-            setFormData({...formData,profilePic:pic});
+            setFormData({...formData,profile_pic:pic});
         }
         useEffect(() => {
             console.log(formData);
         },[formData]);
         function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
             e.preventDefault();
-        if(formData.profilePic===""){
+        if(formData.profile_pic===""){
             setPicValid(false);
             return;
         }
@@ -78,8 +88,17 @@ export function MemberForm() {
             setStateValid(true);
         }
         setLoading(true);
-        axios.post("/api/members",{...formData,linkedin:formData.linkedin.split("/in/").pop(),instagram:formData.instagram.split("instagram.com/").pop()}).then(() => {
-            toast.success('Submitted successfully',{theme:document.querySelector('html')!.getAttribute('data-theme')=='light'?'light':'dark'});
+        axios({method:`${props.data?"PUT":"POST"}`,url:`/api/${props.data?"user":"members"}`,data:{...formData,linkedin:formData.linkedin.split("/in/").pop(),instagram:formData.instagram.split("instagram.com/").pop()}}).then((res) => {
+            toast.dismiss();
+            if(props.data){
+                toast.success('Submitted successfully.',{theme:document.querySelector('html')!.getAttribute('data-theme')=='light'?'light':'dark'});
+            }
+            else{
+                toast.success('Submitted successfully. Redirecting to profile page.',{theme:document.querySelector('html')!.getAttribute('data-theme')=='light'?'light':'dark'});
+                setTimeout(() => {
+                    router.push("/profile");
+                },5000);
+            }
         }).catch(error=>{
             console.log(error);
             let message="Something went wrong!";
@@ -99,6 +118,7 @@ export function MemberForm() {
                     }
                 }
             }
+            toast.dismiss();
             toast.error(message,{theme:document.querySelector('html')!.getAttribute('data-theme')=='light'?'light':'dark'});
         }).finally(()=>{
             setLoading(false);
@@ -107,6 +127,45 @@ export function MemberForm() {
     useEffect(() => {
         console.log(formData);
     },[formData]);
+    useEffect(() => {
+        setStates([]);
+        setFormData({...formData,currentLocation:{...formData.currentLocation,state_id:0,locality:""}});
+        if(formData.currentLocation.country_id===0)
+            return;
+        axios.get(`/api/states?country_id=${formData.currentLocation.country_id}`).then((res) => {
+            setStates(res.data);
+        }).catch((err) => {
+            console.log(err);
+        });
+    },[formData.currentLocation.country_id]);
+    useEffect(() => {
+        if(formData.currentLocation.state_id===0 || states.length==0)
+            return;
+        axios.get(`/api/cities?state_id=${formData.currentLocation.state_id}`).then((res) => {
+            setCities(res.data);
+            if(typeof formData.currentLocation.locality==="number"){
+                setFormData({...formData,currentLocation:{...formData.currentLocation,locality:res.data.find((c:City)=>c.id===formData.currentLocation.locality)?.name||""}});
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
+    },[formData.currentLocation.state_id,states]);
+    useEffect(() => {
+        if(currentUser!==null && currentUser!="guest" && !currentUser.profile){
+            setFormData({...initialFormData,name:currentUser.name,email:currentUser.email,profile_pic:currentUser.profile_pic.split("/")[2].includes("googleusercontent.com")?currentUser.profile_pic.split("96-c")[0]+"196-c":currentUser.profile_pic||""});
+        }
+        else if(currentUser==null || currentUser=="guest"){
+            setFormData(initialFormData);
+        }
+        else{
+            axios.get("/api/user").then((res) => {
+                const socials:{instagram:string,linkedin:string}=JSON.parse(res.data.socials);
+                setFormData({...initialFormData,name:res.data.name,email:res.data.email,mobile:res.data.mobile_no,whatsapp:res.data.whatsapp_no,dept_id:res.data.dept_id,batch:res.data.batch,linkedin:socials.linkedin||"",instagram:socials.instagram||"",profile_pic:res.data.profile_pic.endsWith("96-c")?res.data.profile_pic.replace("96-c","196-c"):res.data.profile_pic,id:res.data.id,jobTitle:res.data.job_title||"",organization:res.data.current_org||"",currentLocation:{locality:res.data.city_id==null? res.data.city_name:res.data.city_id,state_id:res.data.state_id,country_id:res.data.country_id}});
+            }).catch((err) => {
+                console.log(err);
+            });
+        }
+    },[currentUser]);
     function getCity(city:string):string|number{
         const cityObject=cities.find((c)=>c.name.toLowerCase()===city.toLowerCase());
         if(cityObject===undefined){
@@ -118,15 +177,20 @@ export function MemberForm() {
         if(typeof city==="number"){
             const cityObject=cities.find((c)=>c.id===city);
             if(cityObject===undefined){
-                return city.toString();
+                if(typeof city=="string")
+                    return city;
+                else
+                return "";
             }
             return cityObject.name;
         }
         return city;
     }
   return (
-    <form className="flex max-w-5xl p-4 flex-col gap-4 w-full m-auto" onSubmit={handleSubmit}>
-        <ImageCropper setProfilePic={setProfilePic} picValid={picValid} setPicValid={setPicValid} />        
+    <form onSubmit={handleSubmit}>
+        <h1 className="text-center text-xl">{props.data?"Profile":"Be a member"}</h1>
+        <fieldset className="flex max-w-5xl p-4 flex-col gap-4 w-full m-auto" disabled={loading}>
+        <ImageCropper setProfilePic={setProfilePic} picValid={picValid} setPicValid={setPicValid} defaultPic={formData.profile_pic} />        
       <div className="sm:grid sm:grid-flow-col sm:justify-stretch sm:space-x-10 flex flex-col gap-4">
         <FloatingLabel variant="standard" label="Name *" type="text" className="sm:min-w-80 min-w-64" value={formData.name} onInput={(e)=>{setFormData({...formData,name:e.currentTarget.value})}} required />
         <div className="grid grid-flow-col justify-stretch space-x-10">
@@ -154,7 +218,7 @@ export function MemberForm() {
                 departments.map((dept) => <option key={dept.dept_id} value={dept.dept_id}>{dept.dept_name}</option>)
               }
             </Select>
-            <FloatingLabel variant="standard" label="Email *" type="email" className="sm:min-w-80 min-w-64" value={formData.email} onInput={(e)=>{setFormData({...formData,email:e.currentTarget.value})}} required />
+            <FloatingLabel variant="standard" label="Email *" type="email" className="sm:min-w-80 min-w-64 disableable-email" value={formData.email} onInput={(e)=>{setFormData({...formData,email:e.currentTarget.value})}} required disabled={formData.email!=""} />
         </div>
       <div className="grid grid-flow-col justify-stretch sm:space-x-10 space-x-5">
             <FloatingLabel variant="standard" label="Mobile No. *" type="tel" value={formData.mobile} onInput={(e)=>{setFormData({...formData,mobile:e.currentTarget.value})}} required />
@@ -165,12 +229,6 @@ export function MemberForm() {
                   <Select id="country" color={countryValid==false?"failure":"gray"} value={formData.currentLocation.country_id.toString()} onInput={(e)=>{
                       setFormData({...formData,currentLocation:{...formData.currentLocation,...{country_id:parseInt(e.currentTarget.value),state_id:0}}});
                       setCountryValid(true);
-                      setStates([]);
-                      axios.get(`/api/states?country_id=${e.currentTarget.value}`).then((res) => {
-                          setStates(res.data);
-                      }).catch((err) => {
-                          console.log(err);
-                      });
                   }} required>
                     <option value={"0"} disabled>Residence Country *</option>
                     {
@@ -178,12 +236,8 @@ export function MemberForm() {
                       }
                   </Select>
             <Select id="state" color={stateValid==false?"failure":"gray"} value={formData.currentLocation.state_id.toString()} disabled={states.length==0} onInput={(e)=>{
-                setFormData({...formData,currentLocation:{...formData.currentLocation,state_id:parseInt(e.currentTarget.value)}});
-                axios.get(`/api/cities?state_id=${e.currentTarget.value}`).then((res) => {
-                    setCities(res.data);
-                }).catch((err) => { 
-                    console.log(err);
-                });
+                setCities([]);
+                setFormData({...formData,currentLocation:{...formData.currentLocation,locality:"",state_id:parseInt(e.currentTarget.value)}});
                 setStateValid(true);
                 }} required>
               <option value={"0"} disabled>Residence State *</option>
@@ -209,8 +263,10 @@ export function MemberForm() {
       <TextInput id="username3" placeholder="Username/Link" icon={FaInstagram} value={formData.instagram} onInput={(e)=>{setFormData({...formData,instagram:e.currentTarget.value})}} />
         </div>
       
-      <Button type="submit">{loading?<>Submitting... <Spinner aria-label="Spinner button example" size="sm" /></>:"Submit"}</Button>
-      <ToastContainer draggable={true} draggablePercent={30} position={"top-center"} />
+      {currentUser!=null && currentUser=="guest"?<Button type="button" onClick={()=>dispatch(setSignInModal(true))}>Signin to submit</Button>:
+        <Button type="submit" disabled={loading || currentUser==null}>{loading?<>{props.data?"Updating...":"Submitting"}... <Spinner aria-label="Spinner button example" size="sm" /></>:props.data?"Update":"Submit"}</Button>
+      }
+        </fieldset>
     </form>
   );
 }

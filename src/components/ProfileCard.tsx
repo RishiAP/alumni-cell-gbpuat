@@ -1,5 +1,7 @@
+"use client";
 import { User } from '@/types/user';
 import { Card } from 'flowbite-react';
+import Image from 'next/image';
 import { FaGraduationCap, FaInstagram, FaLinkedin, FaPhone, FaRegEnvelope, FaWhatsapp } from 'react-icons/fa';
 import { FaLocationDot } from 'react-icons/fa6';
 
@@ -12,9 +14,11 @@ const ProfileCard = (props:{user:User}) => {
         <div className="flex flex-col sm:flex-row items-center sm:items-start">
           {/* Profile Picture */}
           <div className="w-full md:w-1/3 flex justify-center md:justify-start">
-            <img
+            <Image
+            width={192}
+            height={192}
               className="rounded-full w-48 h-48 object-cover"
-              src={props.user.profile_pic}
+              src={props.user.profile_pic.endsWith("96-c")?props.user.profile_pic.replace("96-c","192-c"):props.user.profile_pic}
               alt="Profile"
             />
           </div>

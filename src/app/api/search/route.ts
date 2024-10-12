@@ -16,7 +16,7 @@ export async function GET(req:NextRequest){
         }
         const batch=parseInt(params.get("batch")||"0");
         const branch=parseInt(params.get("branch")||"0");
-        let query=`SELECT users.id,users.name,users.batch,users.mobile_no,users.whatsapp_no,users.email,users.job_title,users.current_org,users.socials,departments.dept_name,users.city_name,users.profile_pic,cities.name as city,states.name as state,countries.name as country,countries.emoji FROM users INNER JOIN departments ON users.dept_id=departments.dept_id INNER JOIN cities ON users.city_id=cities.id INNER JOIN states ON users.state_id=states.id INNER JOIN countries ON users.country_id=countries.id WHERE 1=1`;
+        let query=`SELECT users.id,users.name,users.batch,users.mobile_no,users.whatsapp_no,users.email,users.job_title,users.current_org,users.socials,departments.dept_name,COALESCE(cities.name,users.city_name) AS city,states.name AS state,countries.name AS country,countries.emoji,users.profile_pic FROM users INNER JOIN departments ON users.dept_id=departments.dept_id LEFT JOIN cities ON users.city_id=cities.id LEFT JOIN states ON users.state_id=states.id LEFT JOIN countries ON users.country_id=countries.id WHERE 1=1`;
         const queryParam:(number|string)[]=[];
         if(city!=0){
             if(typeof city==="number"){
