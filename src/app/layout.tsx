@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     siteName: "Alumni Cell Pantnagar",
     images: [
       {
-        url: `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1728659797/alumni-cell-gbpuat/cbixpy64i9aepmjyjanc.jpg`, // Path to the OG image
+        url: `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1728659797/alumni-cell-gbpuat/cbixpy64i9aepmjyjanc.jpg`, // Path to the OG image
         width: 800,
         height: 600,
         alt: "Alumni Cell Pantnagar OG Image",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     creator: "@alumnicell", // Content creator's Twitter handle
     title: "Alumni Cell Pantnagar",
     description: "Connecting Alumni and Students",
-    images: [`https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/v1728659797/alumni-cell-gbpuat/cbixpy64i9aepmjyjanc.jpg`], // Path to Twitter card image
+    images: [`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1728659797/alumni-cell-gbpuat/cbixpy64i9aepmjyjanc.jpg`], // Path to Twitter card image
   },
 };
 
