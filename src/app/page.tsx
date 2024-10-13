@@ -51,7 +51,7 @@ function handleMoreLoading(){
   if(users==null || !shouldFetchMore)
     return;
   setLoadMoreButtonSpinner(true);
-  axios.get(`/api/search?country=${country}&state=${state}&city=${city}&batch=${batch}&branch=${branch}&offset=${users.length}`).then((res) => {
+  axios.get(`/api/search?country=${country}&state=${state}&city=${city}&&city_name=${getCityFromCode(city)}&batch=${batch}&branch=${branch}&offset=${users.length}`).then((res) => {
     if(res.data.length<10)
       setShouldFetchMore(false);
     setUsers([...users,...res.data]);
@@ -90,7 +90,7 @@ function handleMoreLoading(){
     else{
       setIsRecent(false);
     }
-    axios.get(`/api/search?country=${country}&state=${state}&city=${city}&batch=${batch}&branch=${branch}`).then((res) => {
+    axios.get(`/api/search?country=${country}&state=${state}&city=${city}&&city_name=${getCityFromCode(city)}&batch=${batch}&branch=${branch}`).then((res) => {
       if(res.data.length<10){
         setShouldFetchMore(false);
       }

@@ -8,6 +8,7 @@ export async function GET(req:NextRequest){
         const state=parseInt(params.get("state")||"0");
         const offset=parseInt(params.get("offset")||"0");
         let city:string|number=params.get("city") || "0";
+        const city_name:string=params.get("city_name") || "";
         try{
             city=parseInt(city);
         }
@@ -20,8 +21,9 @@ export async function GET(req:NextRequest){
         const queryParam:(number|string)[]=[];
         if(city!=0){
             if(typeof city==="number"){
-                query+=" AND users.city_id=?";
+                query+=" AND (users.city_id=? OR LOWER(users.city_name) = LOWER(?))";
                 queryParam.push(city);
+                queryParam.push(city_name);
             }
             else{
                 query+=" AND users.city_name=? AND users.state_id=?";
