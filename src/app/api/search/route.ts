@@ -19,24 +19,28 @@ export async function GET(req:NextRequest){
         const branch=parseInt(params.get("branch")||"0");
         let query=`SELECT users.id,users.name,users.batch,users.mobile_no,users.whatsapp_no,users.email,users.job_title,users.current_org,users.socials,departments.dept_name,COALESCE(cities.name,users.city_name) AS city,states.name AS state,countries.name AS country,countries.emoji,users.profile_pic FROM users INNER JOIN departments ON users.dept_id=departments.dept_id LEFT JOIN cities ON users.city_id=cities.id LEFT JOIN states ON users.state_id=states.id LEFT JOIN countries ON users.country_id=countries.id WHERE 1=1`;
         const queryParam:(number|string)[]=[];
-        if(city!=0){
-            if(typeof city==="number"){
-                query+=" AND (users.city_id=? OR LOWER(users.city_name) = LOWER(?))";
-                queryParam.push(city);
-                queryParam.push(city_name);
+        if(country!=0){
+            if(state!=0){
+                if(city!=0){
+                    if(typeof city==="number"){
+                        query+=" AND (users.city_id=? OR LOWER(users.city_name) = LOWER(?))";
+                        queryParam.push(city);
+                        queryParam.push(city_name);
+                    }
+                    else{
+                        query+=" AND users.city_name=? AND users.state_id=?";
+                        queryParam.push(city,state);
+                    }
+                }
+                else{
+                    query+=" AND users.state_id=?";
+                    queryParam.push(state);
+                }
             }
             else{
-                query+=" AND users.city_name=? AND users.state_id=?";
-                queryParam.push(city,state);
+                query+=" AND users.country_id=?";
+                queryParam.push(country);
             }
-        }
-        else if(state!=0){
-            query+=" AND users.state_id=?";
-            queryParam.push(state);
-        }
-        else if(country!=0){
-            query+=" AND users.country_id=?";
-            queryParam.push(country);
         }
         if(batch!=0){
             query+=" AND users.batch=?";

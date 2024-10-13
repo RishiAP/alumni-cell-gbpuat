@@ -108,6 +108,7 @@ function handleMoreLoading(){
   useEffect(()=>{
     setStates([]);
     setCities([]);
+    setState(0);
     axios.get(`/api/states?country_id=${country}`).then((res) => {
       setStates(res.data);
     }).catch((err) => {
@@ -116,6 +117,7 @@ function handleMoreLoading(){
   },[country])
   useEffect(()=>{
     setCities([]);
+    setCity(0);
     axios.get(`/api/cities?state_id=${state}`).then((res) => {
     setCities(res.data);
     }).catch((err) => {
@@ -142,7 +144,7 @@ function handleMoreLoading(){
       <div>
         <Label htmlFor="state">State</Label>
         <Select id="state" onInput={(e) => setState(parseInt(e.currentTarget.value))} disabled={country==0 || states.length==0}>
-          <option value="">Any</option>
+          <option value="0">Any</option>
           {
             states.sort((a:State,b:State)=> a.name.localeCompare(b.name)).map((state) => <option key={state.id} value={state.id}>{state.name}</option>)
           }
